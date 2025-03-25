@@ -2,7 +2,7 @@ import {
     Button, Input, Layout, Menu, Breadcrumb,
     Table, Form, Select, Popover, Modal, Switch,
     Checkbox, DatePicker, ConfigProvider,
-    Tabs,Radio,Upload,Popconfirm
+    Tabs,Radio,Upload,Popconfirm,InputNumber
 } from 'ant-design-vue';
 
 import 'ant-design-vue/dist/antd.css';
@@ -25,7 +25,8 @@ const components:any[] = [
     Tabs,
     Radio,
     Upload,
-    Popconfirm
+    Popconfirm,
+    InputNumber
 ]
 
 export default function setupAnt(app:any):void {

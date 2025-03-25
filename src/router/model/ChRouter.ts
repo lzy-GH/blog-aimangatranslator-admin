@@ -3,7 +3,7 @@ const router = [
         title:'用户管理',
         path: "/user",
         name: 'user',
-        component:() => import('@/views/user/userList.vue'),
+        component:() => import('@/views/user/index.vue'),
         children:[
             {
                 title:'用户管理',
@@ -23,12 +23,12 @@ const router = [
                 name: 'subscribe',
                 component:() => import('@/views/user/subscribe.vue'),
             },
-            {
-                title:'支付管理',
-                path: "/pay",
-                name: 'pay',
-                component:() => import('@/views/user/pay.vue'),
-            },
+            // {
+            //     title:'支付管理',
+            //     path: "/pay",
+            //     name: 'pay',
+            //     component:() => import('@/views/user/pay.vue'),
+            // },
         ]
     },
     // {

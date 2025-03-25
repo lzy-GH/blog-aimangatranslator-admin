@@ -18,12 +18,41 @@
     </serve-list>
     <model
       v-model:isVisible="isVisible"
-      title="漫画编辑"
+      title="用户管理"
       :isLoading="isLoading"
       :isDisabled="isDisabled"
     >
       <template v-slot:content>
-        <div>这是弹窗</div>
+        <a-form :model="editForm" :label-col="{ span: 6 }" :wrapper-col="{ span: 16 }">
+          <a-form-item label="调整翻译次数">
+            <a-input-number 
+              v-model:value="editForm.adjustTimes" 
+              :min="0" 
+              placeholder="输入正数增加/负数减少"
+            />
+          </a-form-item>
+          
+          <a-form-item label="订阅管理">
+            <a-button danger v-if="editForm.hasSubscription" @click="cancelSubscription">
+              取消订阅
+            </a-button>
+            <span v-else>无订阅</span>
+          </a-form-item>
+
+          <a-form-item label="账号状态">
+            <a-switch
+              v-model:checked="editForm.isActive"
+              :checkedValue="true"
+              :unCheckedValue="false"
+              checked-children="正常"
+              un-checked-children="封禁"
+            />
+          </a-form-item>
+
+          <a-form-item label="支付历史">
+            <a-button type="link" @click="showPaymentHistory">查看支付记录</a-button>
+          </a-form-item>
+        </a-form>
       </template>
     </model>
   </div>
@@ -351,6 +380,28 @@ function delImg(name: string) {
     console.log("deleteResourceFile", res);
   });
   console.log(name);
+}
+
+const editForm = reactive({
+  adjustTimes: 0,
+  hasSubscription: false,
+  isActive: true,
+});
+
+function cancelSubscription() {
+  Modal.confirm({
+    title: '确认取消订阅?',
+    content: '此操作将立即终止用户的订阅服务',
+    onOk() {
+      // TODO: Implement subscription cancellation API call
+      message.success('订阅已取消');
+    }
+  });
+}
+
+function showPaymentHistory() {
+  // TODO: Implement payment history display logic
+  message.info('支付历史记录功能开发中');
 }
 </script>
 

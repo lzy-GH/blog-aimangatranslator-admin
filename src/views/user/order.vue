@@ -11,72 +11,48 @@
       @delItem="delItemBtn"
       :isExpandedRowRender="false"
     >
-      <template v-slot:button>
-        <a-upload
-          :showUploadList="false"
-          name="blogFile"
-          :action="`/api/mangaBlog/uploadMangaBlog2TestEnv`"
-          :headers="headers"
-          @change="handleChange"
-        >
-          <a-button :loading="upLoading" @click="addBlo" type="primary"
-            >上传 / 替换 (预览)</a-button
-          >
-        </a-upload>
+      <template #registerTime="{ record }">
+        <span> {{ record.registerTime }}232323</span>
       </template>
-      <template #link="{ record }">
-        <a :href="record.link" target="_blank" rel="noopener noreferrer">{{
-          record.link
-        }}</a>
-      </template>
+
     </serve-list>
     <model
       v-model:isVisible="isVisible"
-      title="漫画编辑"
+      title="用户管理"
       :isLoading="isLoading"
       :isDisabled="isDisabled"
     >
       <template v-slot:content>
-        <div class="blog-img">
-          <div>文章图片资源:</div>
-          <a-upload
-            :showUploadList="false"
-            :multiple="true"
-            name="blogImage"
-            :action="`/api/mangaBlog/uploadMangaBlogImage2ProdEnv`"
-            :headers="headers"
-            :data="{ blogFileName: blogFileName }"
-            @change="handleChangeImg"
-          >
-            <a-button :loading="upImgLoading" @click="addBlo" type="primary"
-              >添加</a-button
-            >
-          </a-upload>
+        <a-form :model="editForm" :label-col="{ span: 6 }" :wrapper-col="{ span: 16 }">
+          <a-form-item label="调整翻译次数">
+            <a-input-number 
+              v-model:value="editForm.adjustTimes" 
+              :min="0" 
+              placeholder="输入正数增加/负数减少"
+            />
+          </a-form-item>
+          
+          <a-form-item label="订阅管理">
+            <a-button danger v-if="editForm.hasSubscription" @click="cancelSubscription">
+              取消订阅
+            </a-button>
+            <span v-else>无订阅</span>
+          </a-form-item>
 
-          <div v-if="getimgLoading">加载...</div>
-          <ul v-else class="imglist">
-            <li v-for="(item, index) in imglistinfo" :key="index" class="item">
-              <div>名称： {{ item.fileName }}</div>
-              <div>{{ item.blogUrl }}</div>
-              <div class="img-box">
-                <a :href="item.blogUrl" target="_blank">
-                  <img :src="item.blogUrl" alt="" />
-                </a>
-              </div>
-              <div class="btn">
-                <a-popconfirm
-                  title="确定删除？"
-                  ok-text="Yes"
-                  @confirm="delImg(item.fileName)"
-                >
-                  <a-button type="primary" :loading="delImgloading" danger
-                    >删除</a-button
-                  >
-                </a-popconfirm>
-              </div>
-            </li>
-          </ul>
-        </div>
+          <a-form-item label="账号状态">
+            <a-switch
+              v-model:checked="editForm.isActive"
+              :checkedValue="true"
+              :unCheckedValue="false"
+              checked-children="正常"
+              un-checked-children="封禁"
+            />
+          </a-form-item>
+
+          <a-form-item label="支付历史">
+            <a-button type="link" @click="showPaymentHistory">查看支付记录</a-button>
+          </a-form-item>
+        </a-form>
       </template>
     </model>
   </div>
@@ -113,63 +89,108 @@ const serveListMd = ref<InstanceType<typeof serveList> | null>(null);
 
 let searchItems = ref<ISearchItems[]>([
   {
-    label: "快速搜索",
-    key: "name",
+    label: "邮箱",
+    key: "email",
     value: "",
     type: "input",
-    placeholder: "请输入",
+    placeholder: "请输入邮箱",
+  },
+  {
+    label: "支付方式",
+    key: "paymentMethod",
+    value: "",
+    type: "select",
+    options: [
+      {
+        label: "PayPal",
+        value: "PayPal",
+      },
+      {
+        label: "Stripe",
+        value: "Stripe",
+      },
+      {
+        label: "Lemon Squeezy",
+        value: "Lemon",
+      },
+    ],
+  },
+  {
+    label: "订单状态",
+    key: "orderStatus",
+    value: "",
+    type: "select",
+    options: [
+      {
+        label: "待支付",
+        value: "0",
+      },
+      {
+        label: "已支付",
+        value: "1",
+      },
+      {
+        label: "已取消",
+        value: "2",
+      },
+    ],
   },
 ]);
 
 let listHeader: ColumnProps[] = [
   {
-    title: "博客名称",
-    dataIndex: "name",
-    key: "name",
-    // slots: { customRender: 'name' },
+    title: "订单号",
+    dataIndex: "orderId",
+    key: "orderId",
+    // slots: { customRender: 'email' },
   },
   {
-    title: "网站链接",
-    dataIndex: "link",
-    key: "link",
-    slots: { customRender: "link" },
+    title: "邮箱",
+    dataIndex: "email",
+    key: "email",
+    // slots: { customRender: "registerTime" },
   },
   {
-    title: "发布时间",
-    dataIndex: "lastModifiedTime",
-    key: "lastModifiedTime",
+    title: "支付时间",
+    dataIndex: "paymentTime",
+    key: "paymentTime",
   },
   {
-    title: "发布状态",
-    dataIndex: "status",
-    key: "status",
+    title: "金额",
+    dataIndex: "amount",
+    key: "amount",
+  },
+  {
+    title: "订单状态",
+    dataIndex: "memberType",
+    key: "memberType",
     customRender: ({ text, record, index }) => {
       switch (text) {
         case 0:
-          return "未发布";
+          return "待支付";
+        case 1:
+          return "已支付";
+        case 2:
+          return "已取消";
         default:
-          return "已发布";
+          return "未知";
       }
     },
   },
 ];
 
 let listOperation: IListOperation[] = [
-  {
-    label: "图片编辑",
-    key: "edit",
-  },
-  {
-    label: "JSON下载",
-    key: "dow",
-  },
-  {
-    label: "发布",
-    key: "prod",
-  },
+  // {
+  //   label: "编辑",
+  //   key: "edit",
+  // },
   {
     label: "删除",
     key: "del",
+  },
+  {
+    label: "退款",
+    key: "refund",
   },
 ];
 
@@ -194,30 +215,40 @@ let listOperation: IListOperation[] = [
 // }
 // let formState = reactive<IVertisingQueryData>(original())
 
+
+let data = reactive([{
+  email: "1",
+  registerTime: "2",
+  paymentMethod: "3",
+  remainingTimes: "4",
+  usedTimes: "5",
+  memberType: "6",
+}]);
 let getList = (val: {}, resolve: (data: {}) => void): void => {
   // getMangaNb()
   // return
 
   // let a = Object.assign(ddd,val)
   // console.log('getList',val);
-  // resolve(datasd)
-  getJSONlist().then((res) => {
-    // dataSource.value = res.records
-    // pageBean.totalCount = res.total;
-    console.log(res.data);
-    let msg: any = [];
-    if (res.code == 200) {
-      msg = res.data?.map((item) => {
-        return {
-          name: item.fileName,
-          link: item.blogUrl,
-          lastModifiedTime: item.lastModifiedTime,
-          status: item.status,
-        };
-      });
-    }
-    resolve(msg);
-  });
+  resolve(data)
+
+  // getJSONlist().then((res) => {
+  //   // dataSource.value = res.records
+  //   // pageBean.totalCount = res.total;
+  //   console.log(res.data);
+  //   let msg: any = [];
+  //   if (res.code == 200) {
+  //     msg = res.data?.map((item) => {
+  //       return {
+  //         name: item.fileName,
+  //         link: item.blogUrl,
+  //         lastModifiedTime: item.lastModifiedTime,
+  //         status: item.status,
+  //       };
+  //     });
+  //   }
+  //   resolve(msg);
+  // });
 };
 
 let isVisible = ref<boolean>(false);
@@ -229,11 +260,8 @@ let blogFileName = ref<string>("");
 let blogFileName2 = ref<string>("");
 function funBtn(key: string, item?: any): void {
   console.log(item);
-  blogFileName.value = item.name.split(".")[0];
-  blogFileName2.value = item.name;
   if (key == "edit") {
     isVisible.value = true;
-    getSelectProdEnvBlogResourceList();
   }
   if (key == "showca") {
     isda.value = true;
@@ -286,29 +314,6 @@ function funBtn(key: string, item?: any): void {
       },
     });
   }
-}
-
-let getimgLoading = ref<boolean>(false);
-function getSelectProdEnvBlogResourceList() {
-  getimgLoading.value = true;
-  selectProdEnvBlogResourceList(blogFileName.value).then((res) => {
-    console.log("selectProdEnvBlogResourceList", res);
-    imglistinfo.length = 0;
-    getimgLoading.value = false;
-    if (res.code == 200) {
-      if (res.data.length > 0) {
-        // 清空原有数据
-        // 使用 push 将新数据添加到响应式数组中
-        res.data.forEach((item) => {
-          imglistinfo.push({
-            blogUrl: item.blogUrl,
-            fileName: item.fileName,
-          });
-        });
-      }
-      console.log("imglistinfo", imglistinfo);
-    }
-  });
 }
 // 下载json文件
 function downloadJsonFile(data: any, fileName: string) {
@@ -407,24 +412,7 @@ function handleChange(info: FileInfo) {
   }
 }
 
-let upImgLoading = ref<boolean>(false);
-function handleChangeImg(info: FileInfo) {
-  upImgLoading.value = true;
-  if (info.file.status !== "uploading") {
-    console.log(info.file, info.fileList);
-  }
-  if (info.file.status === "done") {
-    console.log("info", info.file.response);
 
-    message.success(` 上传成功!`);
-    getSelectProdEnvBlogResourceList();
-    upImgLoading.value = false;
-    // message.success(`${info.file.name} file uploaded successfully`);
-  } else if (info.file.status === "error") {
-    upImgLoading.value = false;
-    // message.error(`${info.file.name} file upload failed.`);
-  }
-}
 
 let delImgloading = ref<boolean>(false);
 function delImg(name: string) {
@@ -432,9 +420,30 @@ function delImg(name: string) {
   deleteResourceFile(blogFileName.value, name).then((res) => {
     delImgloading.value = false;
     console.log("deleteResourceFile", res);
-    getSelectProdEnvBlogResourceList();
   });
   console.log(name);
+}
+
+const editForm = reactive({
+  adjustTimes: 0,
+  hasSubscription: false,
+  isActive: true,
+});
+
+function cancelSubscription() {
+  Modal.confirm({
+    title: '确认取消订阅?',
+    content: '此操作将立即终止用户的订阅服务',
+    onOk() {
+      // TODO: Implement subscription cancellation API call
+      message.success('订阅已取消');
+    }
+  });
+}
+
+function showPaymentHistory() {
+  // TODO: Implement payment history display logic
+  message.info('支付历史记录功能开发中');
 }
 </script>
 
