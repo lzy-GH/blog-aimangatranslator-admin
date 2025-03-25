@@ -4,7 +4,7 @@
         @collapse="onCollapse"
         @breakpoint="onBreakpoint"
         >
-        <div class="logo">漫画翻译内页管理</div>
+        <div class="logo">AiMangaTranslator</div>
         <a-menu theme="dark" mode="inline" v-model:selectedKeys="selectedKeys"  v-model:openKeys="openKeys">
             <template v-for="item in routerPath" :key="item.name">
                 <a-menu-item v-if="!item.children" :key="item.name" @click="pushPath(item.path)">{{item.title}}</a-menu-item>

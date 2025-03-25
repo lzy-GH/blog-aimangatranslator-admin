@@ -8,7 +8,7 @@ const routes: Array<RouteRecordRaw> = [
     path: '/',
     name: 'index',
     component: index,
-    redirect:'/manga',
+    redirect:'/user',
     children: adRouter
   },
   {
