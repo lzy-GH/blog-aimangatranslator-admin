@@ -4,7 +4,7 @@ module.exports = {
   runtimeCompiler: true,
   publicPath: "./",
   devServer: {
-    port: 5003,
+    port: 5004,
     proxy: {
       "/api": {
         target: "http://192.168.1.123:8000/",

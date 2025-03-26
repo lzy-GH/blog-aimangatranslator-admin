@@ -384,7 +384,7 @@ function delImg(name: string) {
 
 const editForm = reactive({
   adjustTimes: 0,
-  hasSubscription: false,
+  hasSubscription: true,
   isActive: true,
 });
 
